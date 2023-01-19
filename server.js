@@ -7,7 +7,8 @@ console.log('Proof of life');
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
-const weather = require('./data/weather.json');
+const weather = 'https://api.weatherbit.io/v2.0/current?lat=35.7796&lon=-78.6382&key=cb18e7e8d43b407f8675a294887a01a8';
+const axios = require('axios');
 
 // DON'T FORGET TO REQUIRE YOUR START JSON FILE
 let data = require('./data/weather.json');
@@ -46,47 +47,42 @@ app.get('/hello', (request, response) =>{
   response.status(200).send(`Hello ${firstName} ${lastName}! Welcome to my server!`)
 })
 
-app.get('/weather', (request, response, next) =>{
+app.get('/location', (request, response, next) =>{
   let lat = request.query.lat;
   let lon = request.query.lon;
   let searchQuery = request.query.searchQuery.toLowerCase();
   let foundCityObj = data.find(city => city.city_name.toLowerCase() === searchQuery);
-  let weatherArray = foundCityObj.data.map(day => new Forecast(day));
+  let cityArray = foundCityObj.data.map(day => new Forecast(day));
+  console.log('this is my city array', cityArray);
 
-  response.status(200).send(weatherArray);
+  response.status(200).send(cityArray);
 })
 
-
-// app.get('/pet', (request, response, next)=>{
-//   try {
-//     let species = request.query.species;
-
-//     let dataToGroom = data.find(pet => pet.species === species);
-//     let dataToSend = new Pet(dataToGroom);
-
-//     response.status(200).send(dataToSend);
-
-//   } catch(error){
-//     next(error);
-//   }
-// })
 class Forecast{
   constructor(forecastObj){
     this.date = forecastObj.datetime
     this.description = forecastObj.weather.description
   }
 }
-// class Pet{
-//   constructor(petObj){
-//     this.name = petObj.name
-//     this.breed = petObj.breed
-//   }
-// }
 
+app.get('/weather', async (request, response, next)=>{
+  let lat = request.query.lat;
+  let lon = request.query.lon;
+  let searchQuery = request.query.searchQuery.toLowerCase();
+  let url = `https://api.weatherbit.io/v2.0/forecast/daily/?key=${process.env.REACT_APP_WEATHER_API_KEY}&lat=${lat}&lon=${lon}&days=1`;
+  let weatherURL = await axios.get(url);
+  console.log(weatherURL.data);
+  // let foundCityWeather = weatherURL.data.find(weatherDay=>weatherDay.city_name === searchQuery);
+  let weatherArray = weatherURL.data.data.map(day => new Forecast(day));
+  console.log(weatherArray);
+  
+  response.status(200).send(weatherArray);
+})
 
 app.get('*', (request, response)=>{
   response.status(404).send('This page does not exist')
 })
+
 
 // ERROR HANDLING - PLUG AND PLAY CODE FROM EXPRESS DOCS
 app.use((error, request, response, next)=>{
