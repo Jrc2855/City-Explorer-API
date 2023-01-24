@@ -19,3 +19,6 @@ Version 1.0 completed 1/16/2023
 
 WRRC Whiteboard Screenshot
 [](./WRRC%20Whiteboard%20Screenshot.jpg)
+
+WRRC 2nd Whiteboard Screenshot
+[](./WRRC%202nd%20Screenshot.jpg)

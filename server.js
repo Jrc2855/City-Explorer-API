@@ -46,7 +46,7 @@ app.get('/hello', (request, response) => {
   response.status(200).send(`Hello ${firstName} ${lastName}! Welcome to my server!`)
 })
 
-app.get('/location', async(request, response, next) => {
+app.get('/location', async (request, response, next) => {
   try {
     let lat = request.query.lat;
     let lon = request.query.lon;
@@ -74,20 +74,50 @@ app.get('/weather', async (request, response, next) => {
   try {
     let lat = request.query.lat;
     let lon = request.query.lon;
-    let searchQuery = request.query.searchQuery.toLowerCase();
     let url = `https://api.weatherbit.io/v2.0/forecast/daily/?key=${process.env.REACT_APP_WEATHER_API_KEY}&lat=${lat}&lon=${lon}&days=3`;
     let weatherURL = await axios.get(url);
     console.log(weatherURL.data);
     // let foundCityWeather = weatherURL.data.find(weatherDay=>weatherDay.city_name === searchQuery);
     let weatherArray = weatherURL.data.data.map(day => new Forecast(day));
     console.log(weatherArray);
-  
+
     response.status(200).send(weatherArray);
 
   } catch (error) {
-    next (error);
+    next(error);
   }
 })
+
+app.get('/movies', async (request, response, next) => {
+  try {
+    let searchQuery = request.query.searchQuery;
+
+    let url =`https://api.themoviedb.org/3/search/movie?api_key=${process.env.REACT_APP_MOVIEDB_API_KEY}&language=en-US&query=${searchQuery}&page=1&include_adult=false`
+    let movieURL = await axios.get(url);
+    console.log(movieURL);
+    
+    let movieArray = movieURL.results.map(display => new Movies(display));
+
+    response.status(200).send(movieArray);
+
+  } catch (error) {
+    next(error);
+  }
+})
+
+// class Forecast {
+//   constructor(forecastObj) {
+//     this.date = forecastObj.datetime
+//     this.description = forecastObj.weather.description
+//   }
+// }
+
+class Movies {
+  constructor(moviesObj) {
+    this.title = moviesObj.Movies.title
+    this.description = moviesObj.Movies.overview
+  }
+}
 
 // CATCH ALL ENDPOINT - NEEDS TO BE YOUR LAST DEFINED ENDPOINT
 app.get('*', (request, response) => {
